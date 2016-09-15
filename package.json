@@ -1,0 +1,15 @@
+{
+  "name": "taskbot",
+  "version": "1.0.0",
+  "description": "a slack bot to help you manage daily tasks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Louis Novick",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "botkit": "^0.2.2"
+  }
+}
