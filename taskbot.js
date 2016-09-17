@@ -13,6 +13,8 @@ if (!process.env.token) {
 
 var Botkit = require('botkit/lib/Botkit.js');
 var os = require('os');
+var res = '';
+var value = '';
 
 var controller = Botkit.slackbot({
   debug: true
@@ -31,9 +33,11 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
         callback: function(response, convo) {
           // since no further messages are queued after this,
           // the conversation will end naturally with status === ‘completed’
+          convo.say('Okay I am done listening for tasks!');
           convo.next();
         },
-      }, {
+      },
+      {
         default: true,
         callback: function(response, convo) {
           convo.say('Task added, "' + response.text + '".');
