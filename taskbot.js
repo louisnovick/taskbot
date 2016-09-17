@@ -13,11 +13,10 @@ if (!process.env.token) {
 
 var Botkit = require('botkit/lib/Botkit.js');
 var os = require('os');
-var res = '';
-var value = '';
 
 var controller = Botkit.slackbot({
-  debug: true
+  debug: true,
+  json_file_store: './db'
 });
 
 var bot = controller.spawn({
@@ -26,30 +25,30 @@ var bot = controller.spawn({
 
 // Add a task to the bots list
 controller.hears(['add tasks'], 'direct_message', function(bot, message) {
+  var user = message.user;
   bot.startConversation(message, function(err,convo) {
-    convo.ask('Type the word "done" once all tasks are added.', [
-      {
-        pattern: 'done',
-        callback: function(response, convo) {
-          // since no further messages are queued after this,
-          // the conversation will end naturally with status === ‘completed’
-          convo.say('Okay I am done listening for tasks!');
-          convo.next();
-        },
-      },
+    convo.ask('Add your tasks using a comma to seperate them.', [
       {
         default: true,
         callback: function(response, convo) {
-          convo.say('Task added, "' + response.text + '".');
-          convo.repeat();
+          convo.say('Tasks added, "' + response.text + '".');
           convo.next();
         },
       },
     ]);
     convo.on('end', function(convo) {
       if (convo.status == 'completed') {
-        var res = convo.extractResponses();
-        var value = convo.extractResponse('key');
+        console.log('completed');
+        var tasks = convo.extractResponses();
+        if(tasks != undefined) {
+          controller.storage.users.save({id: user, tasks: tasks}, function(err) {
+            if(err) {
+              console.log(err);
+            }
+          });
+        } else {
+          console.log('There are no tasks to save');
+        }
       }
     });
     /*bot.startConversation(message, function(err,convo) {
@@ -69,10 +68,30 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
 
 // Show all tasks from the bots list
 controller.hears(['see tasks'], 'direct_message', function(bot, message) {
-  bot.reply(message,'Here are all your tasks for today.\n' + res + value );
+  var user = message.user;
+  controller.storage.users.get(user, function(err, user_data) {
+    if(user_data != undefined) {
+      var userTasks = user_data.tasks['Add your tasks using a comma to seperate them.'];
+      if(userTasks != undefined) {
+        console.log(userTasks);
+        bot.reply(message, 'Here are all your tasks for today. ' + userTasks);
+      } else {
+        bot.reply(message, "You haven't added any tasks yet. Add some by typing 'add tasks'.");
+      }
+    } else {
+      bot.reply(message, "You haven't added any tasks yet. Add some by typing 'add tasks'.");
+    }
+  });
 });
 
 // Clear all tasks from the bots list
 controller.hears(['clear tasks'], 'direct_message', function(bot, message) {
-  bot.reply(message,'Sure thing, your tasklist is cleared');
+  var user = message.user;
+  var tasks = '';
+  controller.storage.users.save({id: user, tasks: tasks}, function(err) {
+    bot.reply(message, "I have cleared your task list.");
+    if(err) {
+      console.log(err);
+    }
+  });
 });
