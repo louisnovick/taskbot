@@ -10,6 +10,7 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
-    "botkit": "^0.2.2"
+    "botkit": "^0.2.2",
+    "lodash": "^4.15.0"
   }
 }

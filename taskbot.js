@@ -12,6 +12,7 @@ if (!process.env.token) {
 }
 
 var Botkit = require('botkit/lib/Botkit.js');
+var _ = require('lodash');
 var os = require('os');
 
 var controller = Botkit.slackbot({
@@ -40,8 +41,9 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
       if (convo.status == 'completed') {
         console.log('completed');
         var tasks = convo.extractResponses();
+        var taskList = tasks['Add your tasks using a comma to seperate them.'];
         if(tasks != undefined) {
-          controller.storage.users.save({id: user, tasks: tasks}, function(err) {
+          controller.storage.users.save({id: user, tasks: taskList}, function(err) {
             if(err) {
               console.log(err);
             }
@@ -59,8 +61,8 @@ controller.hears(['see tasks'], 'direct_message', function(bot, message) {
   var user = message.user;
   controller.storage.users.get(user, function(err, user_data) {
     if(user_data != undefined) {
-      var userTasks = user_data.tasks['Add your tasks using a comma to seperate them.'];
-      if(userTasks != undefined) {
+      var userTasks = user_data.tasks;
+      if(!_.isEmpty(userTasks)) {
         console.log(userTasks);
         bot.reply(message, 'Here are all your tasks for today. ' + userTasks);
       } else {
