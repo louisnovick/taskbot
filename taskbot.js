@@ -32,7 +32,14 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
       {
         default: true,
         callback: function(response, convo) {
-          convo.say('Tasks added, "' + response.text + '".');
+          var tasks = _.split(response.text, ', ');
+          convo.say('Tasks added, \n');
+          var taskList = [];
+          _(tasks).forEach(function(value) {
+            convo.say(value + '\n');
+            taskList.push(value);
+          });
+          controller.storage.users.save({id: user, tasks: taskList}, function(err) {});
           convo.next();
         },
       },
@@ -40,17 +47,6 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
     convo.on('end', function(convo) {
       if (convo.status == 'completed') {
         console.log('completed');
-        var tasks = convo.extractResponses();
-        var taskList = tasks['Add your tasks using a comma to seperate them.'];
-        if(tasks != undefined) {
-          controller.storage.users.save({id: user, tasks: taskList}, function(err) {
-            if(err) {
-              console.log(err);
-            }
-          });
-        } else {
-          console.log('There are no tasks to save');
-        }
       }
     });
   });
@@ -64,7 +60,10 @@ controller.hears(['see tasks'], 'direct_message', function(bot, message) {
       var userTasks = user_data.tasks;
       if(!_.isEmpty(userTasks)) {
         console.log(userTasks);
-        bot.reply(message, 'Here are all your tasks for today. ' + '\n' + userTasks);
+        //bot.reply(message, 'Here are all your tasks for today.\n');
+        _(userTasks).forEach(function(value) {
+          bot.reply(message, value);
+        });
       } else {
         bot.reply(message, "You haven't added any tasks yet. Add some by typing 'add tasks'.");
       }
