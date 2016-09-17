@@ -64,7 +64,7 @@ controller.hears(['see tasks'], 'direct_message', function(bot, message) {
       var userTasks = user_data.tasks;
       if(!_.isEmpty(userTasks)) {
         console.log(userTasks);
-        bot.reply(message, 'Here are all your tasks for today. ' + userTasks);
+        bot.reply(message, 'Here are all your tasks for today. ' + '\n' + userTasks);
       } else {
         bot.reply(message, "You haven't added any tasks yet. Add some by typing 'add tasks'.");
       }
