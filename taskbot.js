@@ -51,18 +51,6 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
         }
       }
     });
-    /*bot.startConversation(message, function(err,convo) {
-      convo.ask('Type the word "done" once all tasks are added.', function(response, convo) {
-        if(response.text !== 'done') {
-          convo.say('Task added, "' + response.text + '".');
-          convo.repeat();
-        } else {
-          convo.say('All tasks added.');
-        }
-
-        convo.next();
-      })
-    });*/
   });
 });
 
