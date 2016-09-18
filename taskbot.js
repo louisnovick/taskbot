@@ -27,7 +27,6 @@ var bot = controller.spawn({
 // Add a task to the bots list
 controller.hears(['add tasks'], 'direct_message', function(bot, message) {
   var user = message.user;
-  var taskList = [];
 
   bot.startConversation(message, function(err,convo) {
     convo.ask('Add your tasks using a comma to seperate them.', [
@@ -39,19 +38,22 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
 
           controller.storage.users.get(user, function(err, user_data) {
             if(user_data.tasks.length > -1) {
-              convo.say('Tasks added, \n');
 
+              // Handle existing tasks
+              var taskList = [];
+              for(var i = 0; i < user_data.tasks.length; i++) {
+                taskList.push(user_data.tasks[i]);
+              }
+
+              convo.say('Tasks added, \n');
+              console.log("userdata" + user_data.tasks);
+              console.log("tasklist: " + taskList);
+              // Prepare to save new tasks
               _(taskChunks).forEach(function(value) {
                 convo.say(value + '\n');
                 taskList.push(value);
               });
-
-              controller.storage.users.save({id: user, foo:'bar'}, function(err) {
-
-              });
-
-              //console.log(taskList);
-              console.log(user_data.tasks);
+              controller.storage.users.save({id: user, tasks: taskList}, function(err) {});
 
             } else {
               console.log(err);
@@ -94,14 +96,13 @@ controller.hears(['see tasks'], 'direct_message', function(bot, message) {
 controller.hears(['complete task'], 'direct_message', function(bot, message) {
   bot.startConversation(message, function(err,convo) {
     var user = message.user;
-    var removedTask;
     convo.ask('Which task would you like to remove?', [
       {
         pattern: /^[1-9]*$/gm,
         callback: function(response, convo, removedTask) {
           var taskNumber = response.text - 1;
           controller.storage.users.get(user, function(err, user_data) {
-            removedTask = user_data.tasks[taskNumber];
+            var removedTask = user_data.tasks[taskNumber];
             convo.say('Task "' + removedTask + '" Completed');
           });
           //controller.storage.users.save({id: user, tasks: taskList}, function(err) {});
