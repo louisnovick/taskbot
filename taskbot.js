@@ -46,8 +46,7 @@ controller.hears(['add tasks'], 'direct_message', function(bot, message) {
               }
 
               convo.say('Tasks added, \n');
-              console.log("userdata" + user_data.tasks);
-              console.log("tasklist: " + taskList);
+
               // Prepare to save new tasks
               _(taskChunks).forEach(function(value) {
                 convo.say(value + '\n');
@@ -96,16 +95,34 @@ controller.hears(['see tasks'], 'direct_message', function(bot, message) {
 controller.hears(['complete task'], 'direct_message', function(bot, message) {
   bot.startConversation(message, function(err,convo) {
     var user = message.user;
-    convo.ask('Which task would you like to remove?', [
+    convo.ask('Which task would you like to complete?', [
       {
         pattern: /^[1-9]*$/gm,
         callback: function(response, convo, removedTask) {
+          var taskList = [];
           var taskNumber = response.text - 1;
           controller.storage.users.get(user, function(err, user_data) {
+
+            // Get the tasklist
+            for(var i = 0; i < user_data.tasks.length; i++) {
+              taskList.push(user_data.tasks[i]);
+            }
+
+            // Complete the task
             var removedTask = user_data.tasks[taskNumber];
-            convo.say('Task "' + removedTask + '" Completed');
+            var taskIndex = taskList.indexOf(removedTask);
+            //console.log(removedTask);
+            if(taskIndex > -1) {
+              taskList.splice(removedTask, 1);
+              convo.say('Task "' + removedTask + '" Completed');
+              controller.storage.users.save({id: user, tasks: taskList}, function(err) {});
+            } else {
+              convo.say('There is no task at ' + response.text);
+              convo.repeat();
+            }
+
+            // Save the new tasklist
           });
-          //controller.storage.users.save({id: user, tasks: taskList}, function(err) {});
           convo.next();
         },
       },
